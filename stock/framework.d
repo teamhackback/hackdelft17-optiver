@@ -87,10 +87,15 @@ struct Day
 auto readDays(string stockFolder)
 {
     Day[] days;
+    version(Windows)
+        enum chunkSize = 100;
+    else
+        enum chunkSize = 1;
+
     foreach (file; stockFolder
                             .dirEntries(SpanMode.breadth)
                             .filter!(f => f.name.endsWith("_prices.csv"))
-                            .parallel(1))
+                            .parallel(chunkSize))
     {
         //"Reading %s".writefln(file.name);
         auto prices = file.name.readDay;
