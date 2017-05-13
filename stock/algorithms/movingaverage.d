@@ -1,4 +1,4 @@
-module stock.algorithms.naive;
+module stock.algorithms.movingaverage;
 
 import stock.framework;
 
@@ -19,8 +19,8 @@ class MovingAverageTrader : Trader
 
     this(int _n, int _m)
     {
-        n = n;
-        m = m;
+        n = _n;
+        m = _m;
     }
 
     override void onNewPrice(Price price)
@@ -73,7 +73,7 @@ class MovingAverageTrader : Trader
 
     override string name()
     {
-        return "%d-%d".format(n, m);
+        return "n:%d-m:%d".format(n, m);
     }
 }
 
