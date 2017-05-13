@@ -23,12 +23,7 @@ class MovingAverageTrader : Trader
 
     override void onNewPrice(Price price)
     {
-        if (!tradingIsOpen) return;
-        if (finalPriceIsNext)
-        {
-            makeOrder(price.date + 1.seconds, -currentStock);
-            return;
-        }
+        if (!tradingIsOpen || finalPriceIsNext) return;
 
         if (countN < n)
         {
@@ -84,16 +79,25 @@ void main(string[] args)
     alias NMTuple = Tuple!(int, "n", int, "m");
     Appender!(NMTuple[]) app;
 
-    foreach(n; iota(3000, 30000, 500))
+    foreach(n; iota(3000, 50000, 1000))
     foreach(m; iota(100, 2000, 100))
         app ~= NMTuple(n, m);
 
-    foreach(nm; app.data.parallel(1))
+    alias NMResultTuple = Tuple!(int, "n", int, "m", double, "balance");
+    NMResultTuple[] results;
+    foreach(nm; app.data.parallel(3))
     {
         //writefln("starting n: %d, m: %d ", nm.n, nm.m);
         Trader trader = new MovingAverageTrader(nm.n, nm.m);
         auto balance = runSimulation(trader, days);
-        if (balance > 0 )
+        if (balance > 30000)
+        {
+            synchronized {
+                results ~= NMResultTuple(nm.n, nm.m, balance);
+            }
             writefln("n: %d, m: %d, balance: %.2f", nm.n, nm.m, balance);
+        }
     }
+    writeln("=====");
+    results.sort!`a.balance > b.balance`[0..min(results.length, 50)].each!(e => "%.2f\t(n:%-6d, m:%d)".writefln(e.balance, e.n, e.m));
 }
