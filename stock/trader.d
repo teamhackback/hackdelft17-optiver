@@ -20,14 +20,16 @@ class Trader
     public int currentStock;
 
     // internal method to do some house-keeping
-    void _newPrice(Price price)
+    void _onNewPrice(Price price)
     {
         lastPrice = price;
-        newPrice(price);
+        onNewPrice(price);
     }
 
     // called with every data point
-    abstract void newPrice(Price price);
+    abstract void onNewPrice(Price price);
+
+    void onNewDay(Date day) {}
 
     void makeOrder(DateTime date, int stock)
     in
@@ -77,8 +79,10 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
     trader.currentStock = 0;
     foreach (day; days)
     {
+        trader.onNewDay(day.date);
+
         // simulate all data points
-        day.prices.each!(p => trader._newPrice(p));
+        day.prices.each!(p => trader._onNewPrice(p));
         assert(trader.currentStock == 0, "Stock balance isn't zero at the end of the day");
         currentBalance += calcTotalDay(day, trader.orders);
 

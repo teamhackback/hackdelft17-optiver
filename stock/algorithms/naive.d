@@ -11,7 +11,7 @@ import std.stdio;
 
 class NaiveTrader : Trader
 {
-    override void newPrice(Price price)
+    override void onNewPrice(Price price)
     {
         if (!tradingIsOpen) return;
         if (finalPriceIsNext)
@@ -40,5 +40,5 @@ void main(string[] args)
     Trader trader = new NaiveTrader();
     //writefln("Final balance: %.2f", runSimulation(trader, days));
 
-    runSimulation(trader, days, File("prices.csv", "w").lockingTextWriter);
+    runSimulation(trader, days, File(buildPath("out", "orders_naive.csv"), "w").lockingTextWriter);
 }
