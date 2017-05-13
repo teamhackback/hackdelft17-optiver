@@ -11,6 +11,7 @@ import std.range;
 import std.stdio;
 import std.string;
 import std.ascii;
+import std.path;
 
 import stock.framework;
 
@@ -69,6 +70,12 @@ class Trader
     bool tradingIsOpen()
     {
         return lastPrice.date.timeOfDay < FinalTradingTime;
+    }
+
+    // TODO: should this be abstract?
+    string name()
+    {
+        return "not-defined";
     }
 }
 
@@ -134,4 +141,48 @@ auto runSimulationWithDays(Trader trader, Day[] days)
         trader._orders.clear();
     }
     return DayBalances(balances, balances.map!`a.balance`.sum);
+}
+
+import progress.bar;
+
+void analyzeTraders(Trader[] traders, string csvOut)
+{
+    string stockFolder = buildPath("optiver", "data");
+    auto days = stockFolder.readDays;
+
+    import std.typecons;
+    import std.parallelism;
+
+    alias NMResultTuple = Tuple!(Trader, "trader", DayBalances, "balances");
+    NMResultTuple[] results;
+
+    Bar b = new Bar();
+    b.message = {return "Analyzing Traders";};
+    b.max = traders.length;
+    foreach(trader; traders.parallel(1))
+    {
+        //writefln("starting n: %d, m: %d ", nm.n, nm.m);
+        auto result = runSimulationWithDays(trader, days);
+        synchronized {
+            results ~= NMResultTuple(trader, result);
+            b.next();
+        }
+    }
+    b.finish();
+
+    // dump top50 to CLI
+    results
+        .sort!`a.balances.total > b.balances.total`[0..min(results.length, 50)]
+        .each!(e => "%-10.2f (%s)".writefln(e.balances.total, e.trader.name));
+
+    csvOut.dirName.mkdirRecurse;
+    auto outFile = File(csvOut, "w");
+    outFile.writeln("algorithm,date,balance");
+    foreach (result; results)
+    {
+        foreach (balance; result.balances.values)
+        {
+            outFile.writefln("%s,%s,%.2f", result.trader.name, balance.date.toISOExtString, balance.balance);
+        }
+    }
 }

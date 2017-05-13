@@ -17,10 +17,10 @@ class MovingAverageTrader : Trader
     double avgN = 0, avgM = 0;
     int countN, countM;
 
-    this(int np, int mp)
+    this(int _n, int _m)
     {
-        n = np;
-        m = mp;
+        n = n;
+        m = m;
     }
 
     override void onNewPrice(Price price)
@@ -70,49 +70,28 @@ class MovingAverageTrader : Trader
             }
         }
     }
+
+    override string name()
+    {
+        return "%d-%d".format(n, m);
+    }
 }
 
 version(MovingAverageTrader)
 void main(string[] args)
 {
-    string stockFolder = buildPath("optiver", "data");
-    auto days = stockFolder.readDays;
-
     import std.typecons;
     import std.array;
     import std.parallelism;
     import std.range;
-    alias NMTuple = Tuple!(int, "n", int, "m");
-    Appender!(NMTuple[]) app;
     auto ns = iota(3000, 50000, 1000);
     auto ms = iota(100, 2000, 100);
 
+    Appender!(Trader[]) app;
+
     foreach(n; ns)
     foreach(m; ms)
-        app ~= NMTuple(n, m);
+        app ~= new MovingAverageTrader(n, m);
 
-    alias NMResultTuple = Tuple!(int, "n", int, "m", DayBalances, "balances");
-    NMResultTuple[] results;
-    foreach(nm; app.data.parallel(3))
-    {
-        //writefln("starting n: %d, m: %d ", nm.n, nm.m);
-        Trader trader = new MovingAverageTrader(nm.n, nm.m);
-        auto result = runSimulationWithDays(trader, days);
-        results ~= NMResultTuple(nm.n, nm.m, result);
-    }
-    results
-        .sort!`a.balances.total > b.balances.total`[0..min(results.length, 50)]
-        .each!(e => "%-10.2f(n:%-6d, m:%d)".writefln(e.balances.total, e.n, e.m));
-
-    auto outFolder = buildPath("out", "movingaverage");
-    outFolder.mkdirRecurse;
-    auto outFile = File(buildPath(outFolder, "all.csv"), "w");
-    outFile.writeln("n,m,date,balance");
-    foreach (result; results)
-    {
-        foreach (balance; result.balances.values)
-        {
-            outFile.writefln("%d,%d,%s,%.2f", result.n, result.m, balance.date.toISOExtString, balance.balance);
-        }
-    }
+    app.data.analyzeTraders(buildPath("out", "movingaverage", "all.csv"));
 }
