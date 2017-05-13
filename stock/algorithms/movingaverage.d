@@ -12,13 +12,13 @@ import std.stdio;
 class MovingAverageTrader : Trader
 {
     int n, m;
-    double avg_n = 0, avg_m = 0;
-    int count_n, count_m;
+    double avgN = 0, avgM = 0;
+    int countN, countM;
 
-    this(int n_p, int m_p)
+    this(int np, int mp)
     {
-        n = n_p;
-        m = m_p;
+        n = np;
+        m = mp;
     }
 
     override void onNewPrice(Price price)
@@ -30,30 +30,30 @@ class MovingAverageTrader : Trader
             return;
         }
 
-        if (count_n < n)
+        if (countN < n)
         {
-            count_n++;
-            avg_n = avg_n + (price.price - avg_n) / count_n;
+            countN++;
+            avgN = avgN + (price.price - avgN) / countN;
         }
         else
-            avg_n = avg_n + (price.price - avg_n) / n;
+            avgN = avgN + (price.price - avgN) / n;
 
-        if (count_m < m)
+        if (countM < m)
         {
-            count_m++;
-            avg_m = avg_m + (price.price - avg_m) / count_m;
+            countM++;
+            avgM = avgM + (price.price - avgM) / countM;
         }
         else
-            avg_m = avg_m + (price.price - avg_m) / m;
+            avgM = avgM + (price.price - avgM) / m;
 
         // start trading after averages are available
-        if (count_n >= n && count_m >= m)
+        if (countN >= n && countM >= m)
         {
-            //writefln("avg_n: %f", avg_n);
-            //writefln("avg_m: %f", avg_m);
-            //writefln("count_n: %d", count_n);
-            //writefln("count_m: %d", count_m);
-            double b_t = avg_m - avg_n;
+            //writefln("avgN: %f", avgN);
+            //writefln("avgM: %f", avgM);
+            //writefln("countN: %d", countN);
+            //writefln("countM: %d", countM);
+            double b_t = avgM - avgN;
 
             if (b_t >= 0)
             {
