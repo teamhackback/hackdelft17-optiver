@@ -9,26 +9,51 @@ import std.random;
 import std.path;
 import std.stdio;
 
+double ema = 0;
+int runs = 1;
+double totalPrice = 0;
+double interest = 0;
+
 class EMATrader : Trader
 {
     override void newPrice(Price price)
     {
-        int EMA = 0;
         if (!tradingIsOpen) return;
         if (finalPriceIsNext)
         {
             makeOrder(price.date + 1.seconds, -currentStock);
             return;
         }
-        enum stockTradingOptions = [-10, 10];
-        if (currentStock.abs < 90 && EMA > 0)
+
+        ema = price.price - totalPrice/runs;
+        runs++;
+        totalPrice = totalPrice + price.price;
+        //writeln(ema);
+
+        enum stockTradingOptions = 10;
+        if (currentStock.abs < 90)
         {
-            makeOrder(price.date + 1.seconds, stockTradingOptions.choice);
+            if (ema > 0)
+            {
+              makeOrder(price.date + 1.seconds, stockTradingOptions);
+              writeln("buy");
+              interest = interest + price.price/1000;
+            }
+            else
+            {
+              if (currentStock.abs > -90)
+              makeOrder(price.date + 1.seconds, -stockTradingOptions);
+              writeln("sell");
+              interest = interest - price.price/1000;
+            }
         }
         else
         {
             makeOrder(price.date + 1.seconds, -currentStock);
+            writeln("sellall");
+            interest = interest - price.price/100;
         }
+        writeln(interest);
     }
 }
 
