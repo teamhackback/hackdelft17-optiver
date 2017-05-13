@@ -11,13 +11,18 @@ import std.stdio;
 
 class MovingAverageTrader : Trader
 {
-    int n = 200, m = 5;
+    int n, m;
     double avg_n = 0, avg_m = 0;
     int count_n, count_m;
 
+    this(int n_p, int m_p)
+    {
+        n = n_p;
+        m = m_p;
+    }
+
     override void onNewPrice(Price price)
     {
- 
         if (!tradingIsOpen) return;
         if (finalPriceIsNext)
         {
@@ -72,6 +77,23 @@ void main(string[] args)
     string stockFolder = buildPath("optiver", "data");
     auto days = stockFolder.readDays;
 
-    Trader trader = new MovingAverageTrader();
-    writefln("Final balance: %.2f", runSimulation(trader, days));
+    import std.typecons;
+    import std.array;
+    import std.parallelism;
+    import std.range;
+    alias NMTuple = Tuple!(int, "n", int, "m");
+    Appender!(NMTuple[]) app;
+
+    foreach(n; iota(3000, 30000, 500))
+    foreach(m; iota(100, 2000, 100))
+        app ~= NMTuple(n, m);
+
+    foreach(nm; app.data.parallel(1))
+    {
+        //writefln("starting n: %d, m: %d ", nm.n, nm.m);
+        Trader trader = new MovingAverageTrader(nm.n, nm.m);
+        auto balance = runSimulation(trader, days);
+        if (balance > 0 )
+            writefln("n: %d, m: %d, balance: %.2f", nm.n, nm.m, balance);
+    }
 }
