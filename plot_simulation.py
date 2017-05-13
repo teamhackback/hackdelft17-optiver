@@ -19,7 +19,7 @@ items_per_day = 30600 / binning_factor
 days_per_tick = 5
 
 orders = pd.read_csv(order_file, parse_dates=['times'], index_col=['times'])
-print(orders)
+orders = orders.resample('1T').mean()
 
 data_path = './optiver/data'
 print("starting parsing.")
@@ -41,8 +41,17 @@ print("df generated.")
 fig, ax_arr = plt.subplots(nrows=10, ncols=5, figsize=(30, 30))
 plt.subplots_adjust(hspace=0.5)
 for idx, file in enumerate(files):
-    df_daily[idx].price.plot(ax=ax_arr[idx // 5, idx % 5], sharex=True)
-    ax_arr[idx // 5, idx % 5].set_title(file.split('_')[0])
+    ax = ax_arr[idx // 5, idx % 5]
+    day = df_daily[idx]
+    day.price.plot(ax=ax, sharex=True)
+
+    current_date = day.index[0].date()
+    current_orders = orders.ix[str(current_date)].dropna()
+    print(current_orders.trades)
+    ax.boxplot(current_orders.trades, [1000 for x in current_orders.trades])
+    ax.plot(current_orders.trades, [900 for x in current_orders.trades])
+    ax.set_title(file.split('_')[0])
+    break
 
 plt.savefig(order_file.replace(".csv", "_subs.svg"), bbox_inches='tight')
 plt.cla();
@@ -61,6 +70,7 @@ for i in range(len(files)):
         xticks_labels.append(label.strftime("%Y-%m-%d"))
 df_50_days.price.plot(ax=axes, use_index=False)
 
+plt.xticks(xticks, xticks_labels)
 plt.savefig(order_file.replace(".csv", "_whole.svg"), bbox_inches='tight')
 
 print("plot done.")
