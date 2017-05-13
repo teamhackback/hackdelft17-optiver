@@ -22,5 +22,3 @@ docs/
 
 # Code coverage
 *.lst
-
-out/

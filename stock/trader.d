@@ -91,7 +91,8 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
         trader.onNewDay(day.date);
 
         // simulate all data points
-        day.prices.each!(p => trader._onNewPrice(p));
+        foreach (price; day.prices)
+            trader._onNewPrice(price);
         assert(trader.currentStock == 0, "Stock balance isn't zero at the end of the day");
         currentBalance += calcTotalDay(day, trader.orders);
 
@@ -101,4 +102,36 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
         trader._orders.clear();
     }
     return currentBalance;
+}
+
+struct DayBalanceEntry
+{
+    Date date;
+    double balance;
+}
+
+struct DayBalances
+{
+    DayBalanceEntry[] values;
+    double total;
+}
+
+auto runSimulationWithDays(Trader trader, Day[] days)
+{
+    trader.currentStock = 0;
+    DayBalanceEntry[] balances;
+    foreach (day; days)
+    {
+        trader.onNewDay(day.date);
+
+        // simulate all data points
+        foreach (price; day.prices)
+            trader._onNewPrice(price);
+
+        assert(trader.currentStock == 0, "Stock balance isn't zero at the end of the day");
+        balances ~= DayBalanceEntry(day.date, calcTotalDay(day, trader.orders));
+
+        trader._orders.clear();
+    }
+    return DayBalances(balances, balances.map!`a.balance`.sum);
 }

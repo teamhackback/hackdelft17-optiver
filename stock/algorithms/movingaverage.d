@@ -8,6 +8,8 @@ import std.math;
 import std.path;
 import std.random;
 import std.stdio;
+import std.format;
+import std.file;
 
 class MovingAverageTrader : Trader
 {
@@ -31,7 +33,9 @@ class MovingAverageTrader : Trader
             avgN = avgN + (price.price - avgN) / countN;
         }
         else
+        {
             avgN = avgN + (price.price - avgN) / n;
+        }
 
         if (countM < m)
         {
@@ -39,7 +43,9 @@ class MovingAverageTrader : Trader
             avgM = avgM + (price.price - avgM) / countM;
         }
         else
+        {
             avgM = avgM + (price.price - avgM) / m;
+        }
 
         // start trading after averages are available
         if (countN >= n && countM >= m)
@@ -78,26 +84,35 @@ void main(string[] args)
     import std.range;
     alias NMTuple = Tuple!(int, "n", int, "m");
     Appender!(NMTuple[]) app;
+    auto ns = iota(3000, 50000, 1000);
+    auto ms = iota(100, 2000, 100);
 
-    foreach(n; iota(3000, 50000, 1000))
-    foreach(m; iota(100, 2000, 100))
+    foreach(n; ns)
+    foreach(m; ms)
         app ~= NMTuple(n, m);
 
-    alias NMResultTuple = Tuple!(int, "n", int, "m", double, "balance");
+    alias NMResultTuple = Tuple!(int, "n", int, "m", DayBalances, "balances");
     NMResultTuple[] results;
     foreach(nm; app.data.parallel(3))
     {
         //writefln("starting n: %d, m: %d ", nm.n, nm.m);
         Trader trader = new MovingAverageTrader(nm.n, nm.m);
-        auto balance = runSimulation(trader, days);
-        if (balance > 30000)
+        auto result = runSimulationWithDays(trader, days);
+        results ~= NMResultTuple(nm.n, nm.m, result);
+    }
+    results
+        .sort!`a.balances.total > b.balances.total`[0..min(results.length, 50)]
+        .each!(e => "%-10.2f(n:%-6d, m:%d)".writefln(e.balances.total, e.n, e.m));
+
+    auto outFolder = buildPath("out", "movingaverage");
+    outFolder.mkdirRecurse;
+    auto outFile = File(buildPath(outFolder, "all.csv"), "w");
+    outFile.writeln("n,m,date,balance");
+    foreach (result; results)
+    {
+        foreach (balance; result.balances.values)
         {
-            synchronized {
-                results ~= NMResultTuple(nm.n, nm.m, balance);
-            }
-            writefln("n: %d, m: %d, balance: %.2f", nm.n, nm.m, balance);
+            outFile.writefln("%d,%d,%s,%.2f", result.n, result.m, balance.date.toISOExtString, balance.balance);
         }
     }
-    writeln("=====");
-    results.sort!`a.balance > b.balance`[0..min(results.length, 50)].each!(e => "%.2f\t(n:%-6d, m:%d)".writefln(e.balance, e.n, e.m));
 }

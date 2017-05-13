@@ -1,3 +1,6 @@
+naive:
+	rdmd -g -version=NaiveTrader ./stock/algorithms/naive.d
+
 movingaverage:
 	rdmd -g -version=MovingAverageTrader ./stock/algorithms/movingaverage.d
 
