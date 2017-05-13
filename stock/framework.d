@@ -110,7 +110,7 @@ auto readDays(string stockFolder)
             days ~= d;
         };
     }
-    return days;
+    return days.sort!`a.date < b.date`().release();
 }
 
 double calcTotalDay(O)(Day day, O orders)

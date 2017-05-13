@@ -78,8 +78,11 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
 {
     double currentBalance = 0;
     trader.currentStock = 0;
-    w.write("times,trades");
-    w.write(newline);
+    static if (!is(W == bool))
+    {
+        w.put("times,trades");
+        w.put(newline);
+    }
     foreach (day; days)
     {
         trader.onNewDay(day.date);
