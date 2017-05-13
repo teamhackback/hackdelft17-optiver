@@ -10,6 +10,7 @@ import std.math;
 import std.range;
 import std.stdio;
 import std.string;
+import std.ascii;
 
 import stock.framework;
 
@@ -77,6 +78,8 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
 {
     double currentBalance = 0;
     trader.currentStock = 0;
+    w.write("times,trades");
+    w.write(newline);
     foreach (day; days)
     {
         trader.onNewDay(day.date);
