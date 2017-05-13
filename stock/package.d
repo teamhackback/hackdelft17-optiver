@@ -81,7 +81,7 @@ auto readDays(string stockFolder)
     return days;
 }
 
-double calculateDay(O)(Day day, O orders)
+double calcTotalDay(O)(Day day, O orders)
 if (is(ElementType!O == Order))
 {
     int stock;
@@ -96,10 +96,10 @@ if (is(ElementType!O == Order))
     return balance;
 }
 
-double calculateDays(Day[] days, Order[] orders)
+double calcTotal(Day[] days, Order[] orders)
 {
     return days
-            .map!(day => calculateDay(day,
+            .map!(day => calcTotalDay(day,
                             orders.filter!(order => order.date.date == day.date))
             )
             .sum;
