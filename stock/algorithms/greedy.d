@@ -17,6 +17,7 @@ class GreedyTrader : Trader
     double shoppingPrice;
     int stockSize;
     double greedyRatio;
+    int values;
 
     this(int _stockSize = 100, double _greedyRatio = 0.95)
     {
@@ -30,17 +31,31 @@ class GreedyTrader : Trader
 
         if (currentStock == 0)
         {
-            makeOrder(price.date + 1.seconds, stockSize);
             shoppingPrice = price.price;
+            values = 0;
+            return makeOrder(price.date + 1.seconds, stockSize);
         }
         else if (currentStock == stockSize)
         {
+            //values++;
             bool isGreedySatisfied = (price.price / shoppingPrice).pow(sgn(stockSize)) < greedyRatio;
             if (isGreedySatisfied)
             {
-                makeOrder(price.date + 1.seconds, -stockSize);
+                return makeOrder(price.date + 1.seconds, -stockSize);
+            }
+
+            // don't hold on too long
+            if (values > 20_000)
+            {
+                return makeOrder(price.date + 1.seconds, -stockSize);
             }
         }
+    }
+
+    override void onNewDay(Date date)
+    {
+        shoppingPrice = 0;
+        values = 0;
     }
 
     override string name()
@@ -69,6 +84,7 @@ void main(string[] args)
     app ~= new GreedyTrader(100, 0.9);
     app ~= new GreedyTrader(100, 0.8);
     app ~= new GreedyTrader(100, 0.7);
+    app ~= new GreedyTrader(100, 0.5);
     app ~= new GreedyTrader(-100, 1.3);
     app ~= new GreedyTrader(-100, 1.2);
     app ~= new GreedyTrader(-100, 1.1);
