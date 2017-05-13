@@ -18,6 +18,9 @@ binning_factor = 60
 items_per_day = 30600 / binning_factor
 days_per_tick = 5
 
+orders = pd.read_csv(order_file, parse_dates=['times'], index_col=['times'])
+print(orders)
+
 data_path = './optiver/data'
 print("starting parsing.")
 files = list(sorted([f for f in listdir(data_path)]))
