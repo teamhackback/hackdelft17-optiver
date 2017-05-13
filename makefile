@@ -4,6 +4,9 @@ naive:
 simpleaverage:
 	rdmd -g -version=SimpleAverageTrader ./stock/algorithms/simpleaverage.d
 
+greedy:
+	rdmd -g -version=GreedyTrader ./stock/algorithms/greedy.d
+
 movingaverage:
 	rdmd -g -version=MovingAverageTrader ./stock/algorithms/movingaverage.d
 
