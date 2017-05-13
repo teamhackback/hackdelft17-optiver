@@ -63,7 +63,7 @@ auto readDay(string stockFile)
         auto p1 = parts.front.filter!(e => !e.among('-', ':')).map!(e => e != ' ' ? cast(char) e : 'T').array;
         Price price = new Price(
             DateTime.fromISOString(p1),
-            parts.dropOne.front.to!double
+            parts.dropOne.front.stripRight.to!double
         );
         app.put(price);
     }
