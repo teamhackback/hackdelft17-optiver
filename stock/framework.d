@@ -78,7 +78,7 @@ struct Day
     Price priceAt(DateTime suggestedDate)
     {
         auto timeDiff = suggestedDate.timeOfDay - TimeOfDay(9, 0, 0);
-        auto index = timeDiff.total!`seconds`;
+        auto index = timeDiff.total!`seconds`.to!size_t;
         //writefln("Index: %s", index);
         return prices[index];
     }
