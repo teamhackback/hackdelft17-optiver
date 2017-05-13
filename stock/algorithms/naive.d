@@ -38,5 +38,7 @@ void main(string[] args)
     auto days = stockFolder.readDays;
 
     Trader trader = new NaiveTrader();
-    writefln("Final balance: %.2f", runSimulation(trader, days));
+    //writefln("Final balance: %.2f", runSimulation(trader, days));
+
+    runSimulation(trader, days, File("prices.csv", "w").lockingTextWriter);
 }
