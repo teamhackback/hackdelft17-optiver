@@ -13,12 +13,8 @@ class NaiveTrader : Trader
 {
     override void onNewPrice(Price price)
     {
-        if (!tradingIsOpen) return;
-        if (finalPriceIsNext)
-        {
-            makeOrder(price.date + 1.seconds, -currentStock);
-            return;
-        }
+        // ignore the last two data points
+        if (!tradingIsOpen || finalPriceIsNext) return;
         enum stockTradingOptions = [-10, 10];
         if (currentStock.abs < 90)
         {

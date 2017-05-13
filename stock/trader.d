@@ -24,6 +24,9 @@ class Trader
     void _onNewPrice(Price price)
     {
         lastPrice = price;
+        // sell/buy everything if there's something remaining at the end of the day
+        if (finalPriceIsNext)
+            makeOrder(price.date + 1.seconds, -currentStock);
         onNewPrice(price);
     }
 
