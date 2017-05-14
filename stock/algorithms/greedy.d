@@ -71,14 +71,11 @@ void main(string[] args)
     import std.array;
     import std.parallelism;
     import std.range;
-    auto ns = iota(3000, 50000, 1000);
-    auto ms = iota(100, 2000, 100);
+
+    runSimulation(new GreedyTrader(100, 0.999), File(buildPath("out", "orders_greedy.csv"), "w").lockingTextWriter);
 
     Appender!(Trader[]) app;
 
-    //foreach(n; ns)
-    //foreach(m; ms)
-        //app ~= new SimpleAverageTrader(n, m);
     app ~= new GreedyTrader(100, 0.999);
     app ~= new GreedyTrader(100, 0.95);
     app ~= new GreedyTrader(100, 0.9);

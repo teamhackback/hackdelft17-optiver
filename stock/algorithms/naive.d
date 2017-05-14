@@ -30,11 +30,8 @@ class NaiveTrader : Trader
 version(NaiveTrader)
 void main(string[] args)
 {
-    string stockFolder = buildPath("optiver", "data");
-    auto days = stockFolder.readDays;
-
     Trader trader = new NaiveTrader();
     //writefln("Final balance: %.2f", runSimulation(trader, days));
 
-    runSimulation(trader, days, File(buildPath("out", "orders_naive.csv"), "w").lockingTextWriter);
+    runSimulation(trader, File(buildPath("out", "orders_naive.csv"), "w").lockingTextWriter);
 }

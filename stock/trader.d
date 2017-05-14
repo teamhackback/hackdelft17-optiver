@@ -79,9 +79,26 @@ class Trader
     }
 }
 
+auto getDays()
+{
+    string stockFolder = buildPath("optiver", "data");
+    auto days = stockFolder.readDays;
+    return days;
+}
+
+double runSimulation(Trader trader)
+{
+    return runSimulation(trader, getDays);
+}
+
 double runSimulation(Trader trader, Day[] days)
 {
     return runSimulation!bool(trader, days, false);
+}
+
+double runSimulation(W)(Trader trader, W w)
+{
+    return runSimulation(trader, getDays, w);
 }
 
 double runSimulation(W)(Trader trader, Day[] days, W w)
@@ -123,6 +140,11 @@ struct DayBalances
     double total;
 }
 
+auto runSimulationWithDays(Trader trader)
+{
+    runSimulationWithDays(trader, getDays);
+}
+
 auto runSimulationWithDays(Trader trader, Day[] days)
 {
     trader.currentStock = 0;
@@ -147,8 +169,7 @@ import progress.bar;
 
 void analyzeTraders(Trader[] traders, string csvOut)
 {
-    string stockFolder = buildPath("optiver", "data");
-    auto days = stockFolder.readDays;
+    auto days = getDays;
 
     import std.typecons;
     import std.parallelism;
