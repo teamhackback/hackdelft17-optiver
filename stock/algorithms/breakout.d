@@ -113,7 +113,7 @@ void main(string[] args)
 
     foreach(n; ns)
     foreach(m; ms)
-        app ~= new BreakoutTrader(n, m);
+        app ~= new BreakoutTrader(35000, 400);
 
     app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
 }

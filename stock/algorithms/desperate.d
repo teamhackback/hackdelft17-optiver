@@ -65,7 +65,7 @@ void main(string[] args)
 
     foreach(n; ns)
     foreach(m; ms)
-      app ~= new DesperateTrader(n, m);
+      app ~= new DesperateTrader(140, 90);
 
     app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
 
