@@ -12,7 +12,9 @@ import std.stdio;
 import std.format;
 import std.file;
 import dstats;
+import dstats.regress;
 import std.container.dlist;
+import std.range;
 
 struct CircularAverage
 {
@@ -27,13 +29,16 @@ struct CircularAverage
 
     void put(double v)
     {
-        dlist.insertFront(v);
+        dlist.insertBack(v);
         if (length >= maxElements)
-            dlist.removeBack;
+            dlist.removeFront;
         else
             length++;
     }
 }
+
+import gsl.fit;
+pragma(lib, "gsl");
 
 class SimpleAverageTrader : Trader
 {
@@ -43,8 +48,9 @@ class SimpleAverageTrader : Trader
     double shoppingPrice;
     double buyRatio;
     double sellRatio;
+    int noTrade;
 
-    this(int max = 300, int small = 20, int tiny = 2, double _buyRatio = 1.001, double _sellRatio = 0.9999)
+    this(int max = 10, int small = 10, int tiny = 1, double _buyRatio = 1.001, double _sellRatio = 1.001)
     {
         windowLarge.maxElements = max;
         windowSmall.maxElements = small;
@@ -56,19 +62,31 @@ class SimpleAverageTrader : Trader
     override void onNewPrice(Price price)
     {
         if (!tradingIsOpen || finalPriceIsNext) return;
-
         windowLarge.put(price.price);
-        windowSmall.put(price.price);
-        windowTiny.put(price.price);
-        if (currentStock == 0 && windowSmall.mean / windowLarge.mean > buyRatio)
+        if (windowLarge.length < windowLarge.maxElements) return;
+        //windowSmall.put(price.price);
+        //windowTiny.put(price.price);
+        //auto x = repeat(1);
+        auto x = iota(0, windowLarge.maxElements, 1.0).array;
+        auto y = windowLarge.dlist[].array;
+
+        double c0, c1, cov00, cov01, cov11, sumsq;
+        gsl_fit_linear (x.ptr, 1, y.ptr, 1, windowLarge.maxElements,  &c0, &c1, &cov00, &cov01, &cov11, &sumsq);
+        if (currentStock == 0 && c1 > 0.1)
         {
-            makeOrder(price.date + 1.seconds, 100);
             shoppingPrice = price.price;
+            noTrade = 0;
+            return makeOrder(price.date + 1.seconds, 100);
         }
-        if (currentStock == 100 && windowTiny.mean / windowSmall.mean < sellRatio)
+        if (currentStock == 100)
         {
-            makeOrder(price.date + 1.seconds, -100);
+            //writeln(price.price / shoppingPrice);
+            if (price.price / shoppingPrice > sellRatio)
+            {
+                return makeOrder(price.date + 1.seconds, -100);
+            }
         }
+        noTrade++;
     }
 
     override string name()
@@ -83,7 +101,7 @@ void main(string[] args)
 {
     Appender!(Trader[]) app;
 
-    app ~= new SimpleAverageTrader(600, 20, 2, 1.001, 0.9999);
+    //app ~= new SimpleAverageTrader(600, 20, 2, 1.001, 0.9999);
     //app ~= new SimpleAverageTrader(6000, 20, 2, 1.001, 0.9999);
     //app ~= new SimpleAverageTrader(3000, 20, 2, 1.001, 0.9999);
     //app ~= new SimpleAverageTrader(600, 200, 2, 1.001, 0.9999);
