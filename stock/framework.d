@@ -122,13 +122,9 @@ if (is(ElementType!O == Order))
     {
         stock += order.amount;
         assert(stock >= -100 && stock <= 100, "Stock boundaries reached");
-        writeln("amount: ", order.amount);
-        writeln("price: ", day.priceAt(order.date).price);
-        balance += order.amount * day.priceAt(order.date).price;
-        writeln("balance: ", balance);
+        balance += -order.amount * day.priceAt(order.date).price;
     }
     assert(stock == 0, "Stock balance isn't zero at the end of the day");
-    writeln("ba", balance);
     return balance;
 }
 
