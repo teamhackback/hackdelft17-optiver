@@ -29,7 +29,7 @@ class BreakoutTrader : Trader
         m = _m;
     }
 
-    override void onNewPrice(Price price)
+    override void onNewPrice(Price price, Price[] history)
     {
         if (!tradingIsOpen || finalPriceIsNext) return;
 

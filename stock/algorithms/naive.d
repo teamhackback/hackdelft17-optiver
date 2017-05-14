@@ -11,7 +11,7 @@ import std.stdio;
 
 class NaiveTrader : Trader
 {
-    override void onNewPrice(Price price)
+    override void onNewPrice(Price price, Price[] history)
     {
         // ignore the last two data points
         if (!tradingIsOpen || finalPriceIsNext) return;

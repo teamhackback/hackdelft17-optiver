@@ -22,17 +22,17 @@ class Trader
     public int currentStock;
 
     // internal method to do some house-keeping
-    void _onNewPrice(Price price)
+    void _onNewPrice(Price price, Price[] history)
     {
         lastPrice = price;
         // sell/buy everything if there's something remaining at the end of the day
         if (finalPriceIsNext)
             makeOrder(price.date + 1.seconds, -currentStock);
-        onNewPrice(price);
+        onNewPrice(price, history);
     }
 
     // called with every data point
-    abstract void onNewPrice(Price price);
+    abstract void onNewPrice(Price price, Price[] history);
 
     void onNewDay(Date day) {}
 
@@ -115,8 +115,8 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
         trader.onNewDay(day.date);
 
         // simulate all data points
-        foreach (price; day.prices)
-            trader._onNewPrice(price);
+        foreach (i, price; day.prices)
+            trader._onNewPrice(price, day.prices[0..i]);
         assert(trader.currentStock == 0, "Stock balance isn't zero at the end of the day");
         currentBalance += calcTotalDay(day, trader.orders);
 
@@ -124,7 +124,6 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
             trader.orders.each!(order => order.write(w));
 
         trader._orders.clear();
-        //break;
     }
     return currentBalance;
 }
@@ -155,8 +154,8 @@ auto runSimulationWithDays(Trader trader, Day[] days)
         trader.onNewDay(day.date);
 
         // simulate all data points
-        foreach (price; day.prices)
-            trader._onNewPrice(price);
+        foreach (i, price; day.prices)
+            trader._onNewPrice(price, day.prices[0..i]);
 
         assert(trader.currentStock == 0, "Stock balance isn't zero at the end of the day");
         balances ~= DayBalanceEntry(day.date, calcTotalDay(day, trader.orders));
