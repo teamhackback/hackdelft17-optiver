@@ -35,18 +35,19 @@ class NaiveTrader : Trader
         // ignore the last two data points
         if (!tradingIsOpen || finalPriceIsNext) return;
 
-        //if (balance > 200)
-            //return;
+        if (balance > 200)
+            return;
 
+        enum stockTradingOptions = [10, -10];
         if (currentStock.abs < 100)
         {
             emptyRuns = 0;
             lastOrderPrice = price.price;
             calcBalance = true;
-            //auto stocks = stockTradingOptions.choice;
-            auto stocks = 100;
+            auto stocks = stockTradingOptions.choice;
+            //auto stocks = 100;
             balanceCalcType = stocks;
-            //if (sgn(currentStock) * lastOrderPrice - price.price > 0 && emptyRuns < 100) return;
+            if (sgn(currentStock) * lastOrderPrice - price.price > 0 && emptyRuns < 100) return;
             return makeOrder(price.date + 1.seconds, stocks);
         }
         else
@@ -73,7 +74,7 @@ void main(string[] args)
     //writefln("Final balance: %.2f", runSimulation(trader, days));
 
     Appender!(Trader[]) app;
-    //foreach (_; 0 .. 50)
+    foreach (_; 0 .. 50)
         app ~= new NaiveTrader();
 
     analyzeTraders(app.data, buildPath("out", "naive.csv"));

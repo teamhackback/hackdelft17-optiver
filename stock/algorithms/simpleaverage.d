@@ -80,12 +80,11 @@ class SimpleAverageTrader : Trader
         if (previousC - c1 > 0)
         {
             hasOrder = true;
-            if (currentStock == 100)
-                if (shoppingPrice > price.price)
-                    return makeOrder(price.date + 1.seconds, -100);
-            else if (currentStock == 0)
-                if (shoppingPrice < price.price)
-                return makeOrder(price.date + 1.seconds, 100);
+            if (price.date.second % 5 == 0)
+            {
+                makeOrder(price.date + 1.seconds, -100);
+                return makeOrder(price.date + 5.seconds, 100);
+            }
             //else if (currentStock == -100)
                     //return makeOrder(price.date + 1.seconds, 100);
         }
