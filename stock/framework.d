@@ -122,17 +122,22 @@ if (is(ElementType!O == Order))
     {
         stock += order.amount;
         assert(stock >= -100 && stock <= 100, "Stock boundaries reached");
-        balance += -sgn(order.amount) * day.priceAt(order.date).price;
+        writeln("amount: ", order.amount);
+        writeln("price: ", day.priceAt(order.date).price);
+        balance += order.amount * day.priceAt(order.date).price;
+        writeln("balance: ", balance);
     }
     assert(stock == 0, "Stock balance isn't zero at the end of the day");
+    writeln("ba", balance);
     return balance;
 }
 
 double calcTotal(Day[] days, Order[] orders)
 {
-    return days
+    auto foo = days
             .map!(day => calcTotalDay(day,
                             orders.filter!(order => order.date.date == day.date))
-            )
-            .sum;
+            );
+    foo.writeln;
+    return foo.sum;
 }
