@@ -15,3 +15,8 @@ movingaverage:
 	rdmd -g -version=MovingAverageTrader ./stock/algorithms/movingaverage.d
 movingaverage_opt:
 	$(DC_OPT) -version=MovingAverageTrader ./stock/algorithms/movingaverage.d
+
+breakout:
+	rdmd -g -version=BreakoutTrader ./stock/algorithms/breakout.d
+breakout_opt:
+	$(DC_OPT) -version=BreakoutTrader ./stock/algorithms/breakout.d

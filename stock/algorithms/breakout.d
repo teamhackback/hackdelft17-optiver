@@ -114,5 +114,6 @@ void main(string[] args)
     foreach(m; ms)
         app ~= new BreakoutTrader(n, m);
 
-    app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
+    //app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
+    runSimulation(new BreakoutTrader(3000, 700), File(buildPath("out", "orders_breakout.csv"), "w").lockingTextWriter);
 }

@@ -27,3 +27,16 @@ for name, group in algos.groupby(['algorithm'], sort=False):
 
 plt.legend(loc='upper right')
 plt.savefig(algo_file.replace(".csv", ".svg"), bbox_inches='tight')
+plt.cla()
+plt.clf()
+
+i = 0
+for name, group in algos.groupby(['algorithm'], sort=False):
+    group = group.sort_values(['date'])
+    plt.plot(group.date.values, np.cumsum(group.balance.values), label=name)
+    if i >= nr_graphs:
+        break
+    i += 1
+
+plt.legend(loc='upper right')
+plt.savefig(algo_file.replace(".csv", "_cum.svg"), bbox_inches='tight')
