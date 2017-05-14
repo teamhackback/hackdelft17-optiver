@@ -52,7 +52,7 @@ for idx, file in enumerate(files):
     orders_buy = orders_all.loc[orders_all.trades > 0].resample('1T').sum()
     orders_sale = orders_all.loc[orders_all.trades < 0].resample('1T').sum()
 
-    width = 0.0001
+    width = 0.001
     ax2 = ax1.twinx()
     ax2.set_xlim(day_index[0], day_index[-1])
     # ax2.set_ylim(-105, 105)
@@ -61,5 +61,4 @@ for idx, file in enumerate(files):
     plt.savefig(day_image_folder + "/" + day_date + ".svg", bbox_inches='tight')
     plt.cla()
     plt.clf()
-    break
 print("day image generated.")
