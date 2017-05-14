@@ -15,19 +15,21 @@ class BreakoutTrader : Trader
 {
     int n, m;
     double avgN = 0, avgM = 0;
-    int countN, countM;
+    /*int countN, countM;*/
 
     double maxPrice = 0;
     double minPrice = 0;
     double pivotPoint = 0;
     double resistance = 0;
     double support = 0;
+    double totalPrice = 0;
+    int runs = 0;
 
-    this(int _n, int _m)
+    /*this(int _n, int _m)
     {
         n = _n;
         m = _m;
-    }
+    }*/
 
     override void onNewPrice(Price price, Price[] history)
     {
@@ -48,7 +50,7 @@ class BreakoutTrader : Trader
         resistance = (pivotPoint + (pivotPoint - minPrice));
         support = (pivotPoint + (maxPrice - pivotPoint));
 
-        if (countN < n)
+        /*if (countN < n)
         {
             countN++;
             avgN = avgN + (price.price - avgN) / countN;
@@ -74,7 +76,14 @@ class BreakoutTrader : Trader
             //writefln("avgN: %f", avgN);
             //writefln("avgM: %f", avgM);
             //writefln("countN: %d", countN);
-            //writefln("countM: %d", countM);
+            //writefln("countM: %d", countM);*/
+
+            runs ++;
+            totalPrice = totalPrice + price.price;
+            avgN = totalPrice / runs;
+
+            avgM = ...
+
             double b_t = avgM - avgN;
 
             if (b_t >= 0)
