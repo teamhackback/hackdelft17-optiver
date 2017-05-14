@@ -37,26 +37,35 @@ struct CircularAverage
 
 class SimpleAverageTrader : Trader
 {
-    CircularAverage window;
+    CircularAverage windowLarge;
+    CircularAverage windowSmall;
+    CircularAverage windowTiny;
     double shoppingPrice;
+    double buyRatio;
+    double sellRatio;
 
-    this()
+    this(int max = 300, int small = 20, int tiny = 2, double _buyRatio = 1.001, double _sellRatio = 0.9999)
     {
-        window.maxElements = 100;
+        windowLarge.maxElements = max;
+        windowSmall.maxElements = small;
+        windowTiny.maxElements = tiny;
+        buyRatio = _buyRatio;
+        sellRatio = _sellRatio;
     }
 
     override void onNewPrice(Price price)
     {
         if (!tradingIsOpen || finalPriceIsNext) return;
 
-        window.put(price.price);
-        double m = window.mean;
-        if (currentStock == 0 && m > 10)
+        windowLarge.put(price.price);
+        windowSmall.put(price.price);
+        windowTiny.put(price.price);
+        if (currentStock == 0 && windowSmall.mean / windowLarge.mean > buyRatio)
         {
             makeOrder(price.date + 1.seconds, 100);
             shoppingPrice = price.price;
         }
-        if (currentStock == 100 && price.price / shoppingPrice < 0.9)
+        if (currentStock == 100 && windowTiny.mean / windowSmall.mean < sellRatio)
         {
             makeOrder(price.date + 1.seconds, -100);
         }
@@ -72,19 +81,16 @@ class SimpleAverageTrader : Trader
 version(SimpleAverageTrader)
 void main(string[] args)
 {
-    import std.typecons;
-    import std.array;
-    import std.parallelism;
-    import std.range;
-    auto ns = iota(3000, 50000, 1000);
-    auto ms = iota(100, 2000, 100);
-
     Appender!(Trader[]) app;
 
-    //foreach(n; ns)
-    //foreach(m; ms)
-        //app ~= new SimpleAverageTrader(n, m);
-    app ~= new SimpleAverageTrader();
+    app ~= new SimpleAverageTrader(600, 20, 2, 1.001, 0.9999);
+    //app ~= new SimpleAverageTrader(6000, 20, 2, 1.001, 0.9999);
+    //app ~= new SimpleAverageTrader(3000, 20, 2, 1.001, 0.9999);
+    //app ~= new SimpleAverageTrader(600, 200, 2, 1.001, 0.9999);
+    //app ~= new SimpleAverageTrader(600, 100, 10, 1.001, 0.9999);
+    //app ~= new SimpleAverageTrader(600, 20, 2, 1.0001, 0.9999);
+    //app ~= new SimpleAverageTrader(600, 20, 2, 1.001, 0.99999);
 
-    app.data.analyzeTraders(buildPath("out", "movingaverage", "all.csv"));
+    runSimulation(new SimpleAverageTrader(), File(buildPath("out", "orders_simpleaverage.csv"), "w").lockingTextWriter).writeln;
+    //app.data.analyzeTraders(buildPath("out", "simpleaverage.csv"));
 }
