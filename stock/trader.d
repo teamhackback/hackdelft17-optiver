@@ -198,12 +198,12 @@ void analyzeTraders(Trader[] traders, string csvOut)
 
     csvOut.dirName.mkdirRecurse;
     auto outFile = File(csvOut, "w");
-    outFile.writeln("algorithm,date,balance");
+    outFile.writeln("algorithm,date,balance,total");
     foreach (result; results)
     {
         foreach (balance; result.balances.values)
         {
-            outFile.writefln("%s,%s,%.2f", result.trader.name, balance.date.toISOExtString, balance.balance);
+            outFile.writefln("%s,%s,%.2f,%.2f", result.trader.name, balance.date.toISOExtString, balance.balance,result.balances.total);
         }
     }
 }
