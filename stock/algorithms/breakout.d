@@ -14,22 +14,22 @@ import std.file;
 class BreakoutTrader : Trader
 {
     int n, m;
-    double avgN = 0, avgM = 0;
-    /*int countN, countM;*/
+
+    double b_t;
+
+    double previousPrice;
 
     double maxPrice = 0;
     double minPrice = 0;
     double pivotPoint = 0;
     double resistance = 0;
     double support = 0;
-    double totalPrice = 0;
-    int runs = 0;
 
-    /*this(int _n, int _m)
+    this(int _n, int _m)
     {
         n = _n;
         m = _m;
-    }*/
+    }
 
     override void onNewPrice(Price price, Price[] history)
     {
@@ -50,55 +50,47 @@ class BreakoutTrader : Trader
         resistance = (pivotPoint + (pivotPoint - minPrice));
         support = (pivotPoint + (maxPrice - pivotPoint));
 
-        /*if (countN < n)
+        /*auto avgN = history[history.length < 1 ? 0 : $ -1 .. $];
+        auto arrN = history.map!"a.price";
+        double sumN = arrN.sum / arrN.length;
+
+        auto avgM = history[history.length < 10? 0 : $ -10 .. $];
+        auto arrM = history.map!"a.price";
+        double sumM = arrM.sum / arrM.length;
+
+        b_t = sumM*100 - sumN*100;*/
+
+        // ignore the last two data points
+        if (!tradingIsOpen || finalPriceIsNext) return;
+        if (currentStock.abs < 90 && price.price >= support)
         {
-            countN++;
-            avgN = avgN + (price.price - avgN) / countN;
+            if (price.price > previousPrice)
+            {
+              makeOrder(price.date + 1.seconds, 1);
+            }
         }
         else
         {
-            avgN = avgN + (price.price - avgN) / n;
+          if (currentStock.abs < 90 && price.price <= resistance)
+            makeOrder(price.date + 1.seconds, -10);
         }
 
-        if (countM < m)
+        previousPrice = price.price;
+
+        /*if (b_t >= 0)
         {
-            countM++;
-            avgM = avgM + (price.price - avgM) / countM;
+            //writefln("buying signal");
+            if (currentStock.abs < 90)
+            && price.price >= support)
+                makeOrder(price.date + 1.seconds, 10);
         }
         else
         {
-            avgM = avgM + (price.price - avgM) / m;
-        }
-
-        // start trading after averages are available
-        if (countN >= n && countM >= m)
-        {
-            //writefln("avgN: %f", avgN);
-            //writefln("avgM: %f", avgM);
-            //writefln("countN: %d", countN);
-            //writefln("countM: %d", countM);*/
-
-            runs ++;
-            totalPrice = totalPrice + price.price;
-            avgN = totalPrice / runs;
-
-            avgM = ...
-
-            double b_t = avgM - avgN;
-
-            if (b_t >= 0)
-            {
-                //writefln("buying signal");
-                if (currentStock.abs < 100 && price.price >= support)
-                    makeOrder(price.date + 1.seconds, 10);
-            }
-            else
-            {
-                //writefln("selling signal");
-                if (currentStock.abs < 100 && price.price <= resistance)
-                    makeOrder(price.date + 1.seconds, -10);
-            }
-        }
+            //writefln("selling signal");
+            if (currentStock.abs < 90)
+            && price.price <= resistance)
+                makeOrder(price.date + 1.seconds, -10);
+        }*/
     }
 
     override string name()
@@ -123,6 +115,5 @@ void main(string[] args)
     foreach(m; ms)
         app ~= new BreakoutTrader(n, m);
 
-    //app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
-    runSimulation(new BreakoutTrader(3000, 700), File(buildPath("out", "orders_breakout.csv"), "w").lockingTextWriter);
+    app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
 }
