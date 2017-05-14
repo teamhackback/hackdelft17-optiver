@@ -1,8 +1,7 @@
-module stock.algorithms.greedy;
+module stock.algorithms.movingaverage;
 
 import stock.framework;
 
-import std.array;
 import std.algorithm;
 import std.datetime;
 import std.math;
@@ -25,7 +24,7 @@ class GreedyTrader : Trader
         greedyRatio = _greedyRatio;
     }
 
-    override void onNewPrice(Price price)
+    override void onNewPrice(Price price, Price[] history)
     {
         if (!tradingIsOpen || finalPriceIsNext) return;
 
@@ -72,7 +71,7 @@ void main(string[] args)
     import std.parallelism;
     import std.range;
 
-    runSimulation(new GreedyTrader(100, 0.999), File(buildPath("out", "orders_greedy.csv"), "w").lockingTextWriter);
+    //runSimulation(new GreedyTrader(100, 0.999), File(buildPath("out", "orders_greedy.csv"), "w").lockingTextWriter);
 
     Appender!(Trader[]) app;
 
@@ -88,5 +87,5 @@ void main(string[] args)
     app ~= new GreedyTrader(-100, 1.05);
     app ~= new GreedyTrader(-100, 1.01);
 
-    app.data.analyzeTraders(buildPath("out", "greedy.csv"));
+    app.data.analyzeTraders(buildPath("out", "greedy", "greedy.csv"));
 }
