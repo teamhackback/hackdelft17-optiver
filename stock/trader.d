@@ -124,6 +124,8 @@ double runSimulation(W)(Trader trader, Day[] days, W w)
             trader.orders.each!(order => order.write(w));
 
         trader._orders.clear();
+        version(SimpleAverageTrader)
+            break;
     }
     return currentBalance;
 }
