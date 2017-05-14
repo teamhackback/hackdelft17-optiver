@@ -111,9 +111,10 @@ void main(string[] args)
 
     Appender!(Trader[]) app;
 
-    foreach(n; ns)
-    foreach(m; ms)
-        app ~= new BreakoutTrader(35000, 400);
+    //foreach(n; ns)
+    //foreach(m; ms)
+    app ~= new BreakoutTrader(35000, 400);
 
-    app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
+    //app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
+    runSimulation(app.data[0], File(buildPath("out", "breakout", "order_breakout.csv"), "w").lockingTextWriter).writeln;
 }
