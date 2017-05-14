@@ -61,4 +61,5 @@ for idx, file in enumerate(files):
     plt.savefig(day_image_folder + "/" + day_date + ".svg", bbox_inches='tight')
     plt.cla()
     plt.clf()
+    break
 print("day image generated.")
