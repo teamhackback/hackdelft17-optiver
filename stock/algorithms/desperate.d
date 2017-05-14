@@ -18,34 +18,56 @@ import std.range;
 
 class DesperateTrader : Trader
 {
+    int n, m;
 
     double slope, oldSlope, oldPrice;
+
+    this(int _n, int _m)
+    {
+        n = _n;
+        m = _m;
+    }
 
     override void onNewPrice(Price price, Price[] history)
     {
         if (!tradingIsOpen || finalPriceIsNext) return;
-
-        slope = 1/(tan(price.price-oldPrice));
-
-        if (currentStock.abs < 90 && slope > 45 && slope > oldSlope)
         {
-            makeOrder(price.date + 1.seconds, +1);
+            slope = 1/(tan(price.price-oldPrice));
+            if (currentStock.abs < 90 && (slope / oldSlope)*100 > n)
+            {
+                makeOrder(price.date + 1.seconds, +10);
+            }
+            if (currentStock.abs < 90 && (slope / oldSlope)*100 < m)
+            {
+                makeOrder(price.date + 1.seconds, -10);
+            }
+            oldSlope = slope;
+            oldPrice = price.price;
         }
-
-        if (currentStock.abs < 90 && slope < 45 && slope < oldSlope)
-        {
-            makeOrder(price.date + 1.seconds, -1);
-        }
-
-        oldSlope = slope;
-        oldPrice = price.price;
+    }
+    override string name()
+    {
+        return "n:%d-m:%d".format(n, m);
     }
 }
 
 version(DesperateTrader)
 void main(string[] args)
 {
+    import std.typecons;
+    import std.array;
+    import std.parallelism;
+    import std.range;
+    auto ns = iota(100, 150, 5);
+    auto ms = iota(50, 100, 5);
+
     Appender!(Trader[]) app;
 
-    runSimulation(new DesperateTrader(), File(buildPath("out", "orders_desperate.csv"), "w").lockingTextWriter).writeln;
+    foreach(n; ns)
+    foreach(m; ms)
+      app ~= new DesperateTrader(n, m);
+
+    app.data.analyzeTraders(buildPath("out", "breakout", "all.csv"));
+
+    /*runSimulation(new DesperateTrader(), File(buildPath("out", "orders_desperate.csv"), "w").lockingTextWriter).writeln;*/
 }
